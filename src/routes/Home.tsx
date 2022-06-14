@@ -1,9 +1,18 @@
-function Home () {
+import styled from "styled-components";
+import Header from "../componets/Header";
 
-    return (
-        <h1>안녕 나는 홈~</h1>
-    );
+const Back = styled.div`
+    background-color: #000000;
+    height: 200vh;
+    `;
 
+function Home() {
+  return (
+   <Back>
+    <Header></Header>
+
+   </Back>
+  );
 };
 
 export default Home;

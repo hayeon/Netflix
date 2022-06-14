@@ -4,8 +4,10 @@ import Home from "./routes/Home";
 import Search from "./routes/Search";
 import Tv from "./routes/Tv";
 function App () {
+
+  return(
   <>
-  <Header></Header>
+  <Home></Home>
   <Router>
     <Switch>
       <Route path="/"><Home/></Route>
@@ -14,6 +16,7 @@ function App () {
     </Switch>
   </Router>
   </>
+  )
 }
 
 export default App;
