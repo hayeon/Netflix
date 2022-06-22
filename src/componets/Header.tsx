@@ -37,9 +37,22 @@ const Logo = styled(motion.svg)`
   }
 `;
 
+const logoVariants = {
+  normal: {
+    fillOpacity: 1,
+  },
+  active: {
+    fillOpacity: [0, 1, 0, 1],
+    transition: {
+      repeat: Infinity,
+    },
+  },
+};
+
 const Items = styled.ul`
   display: flex;
   align-items: center;
+  position: relativex;
 `;
 
 const Item = styled.li`
@@ -52,6 +65,9 @@ function Header() {
       <Nav>
         <NavIn>
           <Logo
+            variants={logoVariants}
+            whileHover="active"
+            initial="nomarl"
             xmlns="http://www.w3.org/2000/svg"
             width="1024"
             height="276.742"
