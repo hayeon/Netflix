@@ -48,7 +48,7 @@ const logoVariants = {
     },
   },
 };
-
+// 아이템 리스트
 const Items = styled.ul`
   display: flex;
   align-items: center;
