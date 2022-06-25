@@ -1,11 +1,13 @@
 import React from 'react';
 // import ReactDOM from 'react-dom';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil'; 
 import { createGlobalStyle } from "styled-components";
 import { ThemeProvider } from 'styled-components';
 import App from './App';
-import {theme} from "./theme";
+import {QueryClient, QueryClientProvider} from "react-query";
+import { theme } from './theme';
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
@@ -62,7 +64,7 @@ table {
 body {
   font-weight: 300;
   font-family: 'Source Sans Pro', sans-serif;
-  color:black;
+  color: "#e5e5e5";
   line-height: 1.2;
 }
 a {
@@ -70,18 +72,23 @@ a {
   color:inherit;
 }
 `;
+const client = new QueryClient();
+
 
 // React 18        
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);
-
 root.render(
     <React.StrictMode>
       <RecoilRoot>
-        <ThemeProvider theme={theme}>
+       <QueryClientProvider client={client}>
+       <ThemeProvider theme={theme}>
+        <BrowserRouter>
           <App />
+          </BrowserRouter>
           <GlobalStyle />
         </ThemeProvider>
+       </QueryClientProvider>
       </RecoilRoot>
     </React.StrictMode>,
 );
