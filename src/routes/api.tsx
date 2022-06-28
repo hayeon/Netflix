@@ -1,7 +1,7 @@
 const API_KEY = "a50e121bc04c7d1378ba62c07d96ff2a";
 const BASE_URL = "https://api.themoviedb.org/3";
 
-export interface IGetMovie {
+export interface IMovieResults {
   id: number;
   backdrop_path: string;
   poster_path: string;
@@ -15,7 +15,7 @@ export interface IGetMovies {
     minimum: string;
   };
   page: number;
-  results: []; //IGetMoive
+  results: IMovieResults[];
   total_pages: number;
   total_results: number;
 }
