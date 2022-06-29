@@ -46,7 +46,7 @@ const OverView = styled.p`
 
 const Slider = styled.div`
   position: relative;
-  top: -100px ;
+  top: -100px;
 `;
 
 const SliderRow = styled(motion.div)`
@@ -54,21 +54,23 @@ const SliderRow = styled(motion.div)`
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(6, 1fr);
-  position: absolute;
+  position:center;
   width: 100%;
+  align-items: center;
 `;
 
 const Item = styled(motion.div)`
   background-color: white;
   height: 200px;
   color: red;
-  font-size: 60px;
+  font-size: 40px;
+
 `;
 
 const rowVariants = {
-  hidden: { x: window.outerWidth +10 },
+  hidden: { x: window.outerWidth + 10 },
   visible: { x: 0 },
-  exit: { x: -window.outerWidth -10 },
+  exit: { x: -window.outerWidth - 10 },
 };
 
 function Home() {
@@ -76,11 +78,28 @@ function Home() {
     ["movies", "nowPlaying"],
     getMovies
   );
+
   const [index, setIndex] = useState(0);
-  const plusIdx = () => setIndex((prev) => prev + 1);
-  const [leaving, setLeaving] = useState(false);
-  if(leaving===true) {
-    
+  // const plusIdx = () => setIndex((prev) => prev + 1);
+  //빠르게 클릭했을 때 행이 exit하는 도중 다음 row가 사라져 gap이 넓어지는 오류 방지
+  const [slideNext, setSlideNext] = useState(false);
+  const plusIdx = () => {
+    //슬라이더 인덱스 추가 함수
+    //SlideNext이면 그대로 return
+    if (data) {
+      if (slideNext) {
+        return;
+      }
+      toggleSlideNext();
+      const movieSix = 6;
+      const totalMovies = data.results.length -1; //-1은 배너에서 사용됨
+      const maxIndx = Math.ceil(totalMovies / movieSix);
+      setSlideNext(true);
+      setIndex((prev) => prev === maxIndx? 0 : prev+ 1);
+    }
+  };
+  const toggleSlideNext = () => setSlideNext((prev) => !prev);
+
   return (
     <Wrapper>
       {isLoading ? (
@@ -95,18 +114,23 @@ function Home() {
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
           <Slider>
-            <AnimatePresence>
+            {/* exit될 때 실행되는 onExitComplete, SliderNext==false  */}
+
+            <AnimatePresence onExitComplete={toggleSlideNext}>
               <SliderRow
                 key={index}
                 variants={rowVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                transition={{ type:"tween", duration: 0.5}}
+                transition={{ type: "tween", duration: 0.5 }}
               >
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Item key={i}> {i}</Item>
-                ))}
+                {data?.results
+                  .slice(1)
+                  .slice(6 * index, 6 * index + 6)
+                  .map((movie) => (
+                    <Item key={movie.id}> {movie.title}</Item>
+                  ))}
               </SliderRow>
             </AnimatePresence>
           </Slider>
