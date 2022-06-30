@@ -17,7 +17,7 @@ const Loader = styled.div`
   align-items: center;
 `;
 
-const Banner = styled.div<{ bgposter: string }>`
+const Banner = styled.div<{ bgPoster: string }>`
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -28,7 +28,7 @@ const Banner = styled.div<{ bgposter: string }>`
       rgba(0, 0, 0, 1),
       rgba(0, 0, 0, 0)
     ),
-    url(${(props) => props.bgposter});
+    url(${(props) => props.bgPoster});
   background-size: cover;
 `;
 
@@ -54,23 +54,25 @@ const SliderRow = styled(motion.div)`
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(6, 1fr);
-  position:center;
+  position: center;
   width: 100%;
   align-items: center;
 `;
 
-const Item = styled(motion.div)`
+const Item = styled(motion.div)<{bgPoster:string}>`
   background-color: white;
+  background-image: url(${(props)=> props.bgPoster});
+  background-size: cover;
+  background-position: center center;
   height: 200px;
   color: red;
   font-size: 40px;
-
 `;
 
 const rowVariants = {
-  hidden: { x: window.outerWidth + 10 },
+  hidden: { x: window.outerWidth + 5 },
   visible: { x: 0 },
-  exit: { x: -window.outerWidth - 10 },
+  exit: { x: -window.outerWidth - 5 },
 };
 
 function Home() {
@@ -91,11 +93,13 @@ function Home() {
         return;
       }
       toggleSlideNext();
+      const totalMovies = data.results.length - 1; //-1은 배너에서 사용됨
+
       const movieSix = 6;
-      const totalMovies = data.results.length -1; //-1은 배너에서 사용됨
-      const maxIndx = Math.ceil(totalMovies / movieSix);
-      setSlideNext(true);
-      setIndex((prev) => prev === maxIndx? 0 : prev+ 1);
+      const maxIndx = Math.ceil(totalMovies / movieSix); // 총 영화 수 / 슬라이더 갯수 올림 page는 0에서 시작하므로,
+
+      setSlideNext(true); //증가하고자 하는 인덱스가 max 이면 0으로 되돌림 
+      setIndex((prev) => (prev === maxIndx ? 0 : prev + 1));
     }
   };
   const toggleSlideNext = () => setSlideNext((prev) => !prev);
@@ -108,7 +112,7 @@ function Home() {
         <>
           <Banner
             onClick={plusIdx}
-            bgposter={posterURL(data?.results[0].backdrop_path || "")}
+           bgPoster={posterURL(data?.results[0].backdrop_path || "")}
           >
             <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
@@ -116,7 +120,7 @@ function Home() {
           <Slider>
             {/* exit될 때 실행되는 onExitComplete, SliderNext==false  */}
 
-            <AnimatePresence onExitComplete={toggleSlideNext}>
+            <AnimatePresence initial={false} onExitComplete={toggleSlideNext}>
               <SliderRow
                 key={index}
                 variants={rowVariants}
@@ -126,10 +130,10 @@ function Home() {
                 transition={{ type: "tween", duration: 0.5 }}
               >
                 {data?.results
-                  .slice(1)
+                  .slice(1) /* 배너 영화는 제외 */
                   .slice(6 * index, 6 * index + 6)
                   .map((movie) => (
-                    <Item key={movie.id}> {movie.title}</Item>
+                    <Item key={movie.id} bgPoster={posterURL(movie.backdrop_path || "w500")}></Item>
                   ))}
               </SliderRow>
             </AnimatePresence>
