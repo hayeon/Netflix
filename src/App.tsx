@@ -15,8 +15,8 @@ function App() {
           <Route path="/search">
             <Search />
           </Route>
-          {/* /는 항상 마지막에 */}
-          <Route path="/">
+          {/* /는 항상 마지막에 2개의 path에서 같은 컴포넌트 렌더링 */}
+          <Route path={["/", "/movies/:movie.id"]}>
             <Home />
           </Route>
         </Switch>

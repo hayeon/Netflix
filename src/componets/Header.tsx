@@ -103,8 +103,9 @@ const Item = styled.li`
 
 function Header() {
   const [serachOpen, setSearchOpen] = useState(false);
+  //useRouteMatch를 통해 현재 위치가 어디인지
   const homeMatch = useRouteMatch("/");
-  const tvMatch = useRouteMatch("/tv");
+  const tvMatch = useRouteMatch("/tv"); 
   const serachBarAnimation = useAnimation();
   const navAnimation = useAnimation();
   const { scrollY } = useViewportScroll();
