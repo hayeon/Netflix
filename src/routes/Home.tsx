@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useViewportScroll } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "react-query";
 import { useHistory, useRouteMatch } from "react-router-dom";
@@ -19,7 +19,7 @@ const Loader = styled.div`
 `;
 
 const Banner = styled.div<{ bgposter: string }>`
-  height: 100vh;
+  height: 90vh;
   display: flex;
   flex-direction: column;
   justify-content: center; //상 *중* 하
@@ -33,6 +33,10 @@ const Banner = styled.div<{ bgposter: string }>`
   background-size: cover;
 `;
 
+const SliderTitle = styled.h2`
+  font-size: 50px;
+  color: ${(props) => props.theme.white.lighter};
+`;
 const Title = styled.h2`
   font-size: 68px;
   color: ${(props) => props.theme.white.lighter};
@@ -44,6 +48,8 @@ const OverView = styled.p`
   font-size: 34px;
   width: 50%; //없으면 끝까지 줄줄줄
 `;
+
+//슬라이더
 
 const Slider = styled.div`
   position: relative;
@@ -76,18 +82,21 @@ const Item = styled(motion.div)<{ bgposter: string }>`
     transform-origin: center right;
   }
 `;
+
 const MovieInfo = styled(motion.div)`
-  padding: 20px;
+  //영화 정보
   width: 100%;
   bottom: 0;
-  height: 60px;
-  background-color: ${(props) => props.theme.black.lighter};
-  opacity: 0;
+  height: 80px;
+  background-color: black;
+  opacity: 1;
   position: absolute;
   h4 {
-    font-size: 20px;
-    text-align: center;
+    font-size: 15px;
+    text-align: left;
+    padding-left: 5px;
   }
+  display: inline;
 `;
 
 const rowVariants = {
@@ -113,28 +122,68 @@ const infoVariants = {
 };
 
 const Overlay = styled(motion.div)`
-  position: absolute;
+  opacity: 0;
+  position: fixed;
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.5);
-`
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+const ClickMoive = styled(motion.div)`
+  position: absolute;
+  background-color: ${(props) => props.theme.black.lighter};
+  border-radius: 20px;
+  overflow: hidden;
+  width: 40vw;
+  height: 80vh;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+`;
+
+const ClickMoiveImage = styled(motion.div)`
+  width: 100%;
+  background-size: cover;
+  background-position: center center;
+  height: 400px;
+`;
+
+const ClickMoiveTitle = styled(motion.h3)`
+  color: ${(props) => props.theme.white.lighter};
+  font-size: 46px;
+  position: relative;
+  padding: 10px;
+  padding-left: 20px;
+  top: -80px;
+`;
+
+const ClickMoiveOverview = styled(motion.h3)`
+  color: ${(props) => props.theme.white.lighter};
+  padding: 20px;
+  top: -80px;
+  font-size: 26px;
+  position: relative;
+  top: -80px;
+`;
 
 function Home() {
   const history = useHistory(); //여러 route 사이를 이동
   const movieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId"); ///movies/:movieId에 있으면 movieMatch는 존재, 아니면 null
-  console.log(movieMatch);
+  const { scrollY } = useViewportScroll(); //object를 return
   // 영화  api 정보 가져옴
   const { data, isLoading } = useQuery<IGetMovies>(
     ["movies", "nowPlaying"],
     getMovies
-  );
+  ); //클릭한 영화의 ID가 존재한다면, 클릭한 영화 ID와 API로부터 가져온 영화 ID가 같은 걸 찾는다.
+  const clickedMovie =
+    movieMatch?.params.movieId &&
+    data?.results.find((movie) => movie.id + "" === movieMatch?.params.movieId);
 
   const [page, setPage] = useState(0);
   // const onClcikSlid = () => setPage((prev) => prev + 1);
   //빠르게 클릭했을 때 행이 exit하는 도중 다음 row가 사라져 gap이 넓어지는 오류 방지
   const [slideNext, setSlideNext] = useState(false);
-
   //슬라이드 onClick함수: 클릭스 인덱스가 +1
   const onClcikSlid = () => {
     if (data) {
@@ -151,13 +200,8 @@ function Home() {
     history.push(`/movies/${movieId}`);
   };
 
-
-  
-  const onOverlayClick = () => history.goBack()
-  
-  
-  
-  
+  //오버레이 클릭시 발생
+  const onOverlayClick = () => history.goBack();
   return (
     <Wrapper>
       {isLoading ? (
@@ -171,7 +215,9 @@ function Home() {
             <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
-          <Slider>
+
+         
+          <Slider > <SliderTitle>Weekly Best</SliderTitle>
             {/* exit될 때 실행되는 onExitComplete, SliderNext==false  */}
             <AnimatePresence initial={false} onExitComplete={toggleSlideNext}>
               <SliderRow
@@ -196,34 +242,53 @@ function Home() {
                       bgposter={posterURL(movie.backdrop_path || "w500")}
                     >
                       <MovieInfo variants={infoVariants}>
-                        <h4>{movie.title}</h4>
+                        <h4>
+                          {movie?.name && movie?.name}
+                          {movie?.title && movie?.title}
+                        </h4>
+                        <h4>Genre {movie.media_type}</h4>
                       </MovieInfo>
                     </Item>
                   ))}
               </SliderRow>
             </AnimatePresence>
           </Slider>
+
+          
+
+         
+
           <AnimatePresence>
-            {movieMatch ? (
+            {movieMatch ? ( //movieMatch가 생기면
               <>
-              <Overlay>
-              
-                <motion.div
-                  layoutId={movieMatch.params.movieId}
-                  style={{
-                    position: "absolute",
-                    width: "50vw",
-                    height: "50vh",
-                    backgroundColor: "red",
-                    top: 50,
-                    left: 0,
-                    right: 0,
-                    margin: "0, auto",
-                  }}
-                />
-                 </Overlay>
+                <Overlay
+                  onClick={onOverlayClick}
+                  exit={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <ClickMoive
+                    style={{ top: scrollY.get() }}
+                    layoutId={movieMatch.params.movieId} //링크에 있을 때만 발생
+                  >
+                    {clickedMovie && (
+                      <>
+                        <ClickMoiveImage
+                          style={{
+                            backgroundImage: `linear-gradient(to top ,black, transparent), 
+                            url(${posterURL(clickedMovie.backdrop_path)})`,
+                          }}
+                        />
+                        <ClickMoiveTitle>
+                          {clickedMovie.original_title}
+                        </ClickMoiveTitle>
+                        <ClickMoiveOverview>
+                          {clickedMovie.overview}
+                        </ClickMoiveOverview>
+                      </>
+                    )}
+                  </ClickMoive>
+                </Overlay>
               </>
-             
             ) : null}
           </AnimatePresence>
         </>

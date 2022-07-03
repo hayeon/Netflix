@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import { motion, useAnimation, useViewportScroll } from "framer-motion";
-import { Link, useRouteMatch } from "react-router-dom";
+import { Link, useHistory, useRouteMatch } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 const Nav = styled(motion.nav)`
   display: flex;
@@ -27,25 +28,26 @@ const HoverCircle = styled(motion.span)`
   margin: 0 auto;
 `;
 
-const Search = styled.span`
+const Search = styled.form`
   color: white;
   svg {
-    height: 30px;
+    margin-top: 10px;
+    height: 23px;
   }
-  margin-right: 100px;
+  margin-right: 105px;
 `;
 
 const SearchBar = styled(motion.input)`
   transform-origin: right center;
   margin-right: 50px;
   height: 40px;
+  width: 270px;
   position: absolute;
   right: 0px;
   padding: 5px 30px;
-  padding-left: 50px;
   z-index: -1;
   font-size: 16px;
-  color: black;
+  color: white;
   background-color: transparent;
   border: 1px solid ${(props) => props.theme.white.lighter};
 `;
@@ -101,11 +103,16 @@ const Item = styled.li`
   }
 `;
 
+interface IForm {
+  keyword: string;
+}
+
 function Header() {
   const [serachOpen, setSearchOpen] = useState(false);
   //useRouteMatch를 통해 현재 위치가 어디인지
+  //만약에 "/"에 있다면 , HoverMatch가 위치해야함
   const homeMatch = useRouteMatch("/");
-  const tvMatch = useRouteMatch("/tv"); 
+  const tvMatch = useRouteMatch("/tv");
   const serachBarAnimation = useAnimation();
   const navAnimation = useAnimation();
   const { scrollY } = useViewportScroll();
@@ -121,6 +128,7 @@ function Header() {
     setSearchOpen((prev) => !prev);
   };
   useEffect(() => {
+    //헤더 흐려지는 애니메이션
     scrollY.onChange(() => {
       if (scrollY.get() > 10) {
         navAnimation.start("scroll");
@@ -130,14 +138,15 @@ function Header() {
     });
   }, [scrollY, navAnimation]);
 
-  //만약에 "/"에 있다면 , HoverMatch가 위치해야함
+  const history = useHistory();
+  const { register, handleSubmit } = useForm<IForm>();
+  //검색 함수
+  const onVaild = (data: IForm) => {
+    history.push(`/search?keyword=${data.keyword}`); //검색한 사이트로 이동
+  };
   return (
     <>
-      <Nav
-        variants={navScrollVar}
-        animate={navAnimation}
-        initial={"top"}
-      >
+      <Nav variants={navScrollVar} animate={navAnimation} initial={"top"}>
         <NavIn>
           <Logo
             variants={logoVariants}
@@ -163,7 +172,8 @@ function Header() {
           </Items>
         </NavIn>
         <NavIn>
-          <Search>
+          {/* 첫번째 인자: 데이터가 유효하면 실행할 함수 */}
+          <Search onSubmit={handleSubmit(onVaild)}>
             <motion.svg
               onClick={toggleSearch}
               animate={{ x: serachOpen ? -185 : 0 }}
@@ -178,13 +188,16 @@ function Header() {
                 clipRule="evenodd"
               ></path>
             </motion.svg>
-          </Search>
-          <SearchBar
+            <SearchBar
+          // form으로 감싸줘야함
+            {...register("keyword", { required: true, minLength: 1 })}
             animate={serachBarAnimation}
             initial={{ scaleX: 0 }}
             transition={{ type: "linear" }}
             placeholder=" TV, 시리즈를 검색하세요."
           />
+          </Search>
+         
         </NavIn>
       </Nav>
     </>

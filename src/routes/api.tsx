@@ -7,7 +7,10 @@ export interface IMovieResults {
   poster_path: string;
   title: string;
   overview: string;
-}
+  original_title:string
+  name:string
+  media_type: string
+};
 
 export interface IGetMovies {
   dates: {
@@ -18,9 +21,10 @@ export interface IGetMovies {
   results: IMovieResults[];
   total_pages: number;
   total_results: number;
+  poster_path:string;
 }
 
 export async function getMovies() {
-  const response = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
+  const response = await fetch(`${BASE_URL}/trending/all/week?api_key=${API_KEY}`);
   return await response.json();
 }
