@@ -150,7 +150,6 @@ function Header() {
         <NavIn>
           <Logo
             variants={logoVariants}
-            whileHover="active"
             initial="nomarl"
             xmlns="http://www.w3.org/2000/svg"
             width="1024"

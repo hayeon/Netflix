@@ -34,7 +34,10 @@ const Banner = styled.div<{ bgposter: string }>`
 `;
 
 const SliderTitle = styled.h2`
-  font-size: 50px;
+  padding-left: 40px;
+  padding-bottom: 20px;
+  font-size: 30px;
+  font-weight: bold;
   color: ${(props) => props.theme.white.lighter};
 `;
 const Title = styled.h2`
@@ -65,12 +68,66 @@ const SliderRow = styled(motion.div)`
   align-items: center;
 `;
 
+
+const SliderLeft = styled(motion.div)`
+  position: absolute;
+  width: 50px;
+  height: 400px;
+  color: red;
+  opacity: 0.3; 
+  cursor: pointer;
+  z-index: 2;
+  svg {
+    transition: transform 0.15s;
+  }
+  &:hover {
+    background-color: white;
+    opacity: 0.8;
+    svg {
+      transform: scale(1.5);
+    }
+  }
+`;
+
+const SliderRight = styled(motion.div)`
+  position: absolute;
+  /* bottom: 0; */
+  right: 0; 
+  display: flex;
+  align-items: center;
+  width: 50px;
+  height: 400px;
+  color: red;
+  opacity: 0.3; 
+  cursor: pointer;
+  svg {
+    transition: transform 0.15s;
+  }
+  &:hover {
+    background-color: white;
+    opacity: 0.8;
+    svg {
+      transform: scale(1.5);
+    }
+  }
+`;
+const RightSvg = styled(motion.svg)`
+   margin-left: 50px;
+  margin-right: 50px;
+  width: 95px;
+  height: 25px;
+  fill: ${(props) => props.theme.red};
+  path {
+    stroke-width: 6px;
+  }
+`;
+
 const Item = styled(motion.div)<{ bgposter: string }>`
   background-color: white;
   background-image: url(${(props) => props.bgposter});
   background-size: cover;
   background-position: center center;
-  height: 200px;
+  height: 400px;
   cursor: pointer;
   color: ${(props) => props.theme.white.lighter};
   font-size: 40px;
@@ -83,19 +140,33 @@ const Item = styled(motion.div)<{ bgposter: string }>`
   }
 `;
 
+const RankingNumber = styled(motion.h1)`
+  font-size: 68px;
+  color: transparent;
+  -webkit-text-stroke: 3px white;
+`;
+
 const MovieInfo = styled(motion.div)`
   //영화 정보
   width: 100%;
   bottom: 0;
   height: 80px;
   background-color: black;
-  opacity: 1;
+  opacity: 0;
   position: absolute;
   h4 {
-    font-size: 15px;
+    font-size: 13px;
     text-align: left;
-    padding-left: 5px;
+    margin-left: 10px;
+    padding-bottom: 3px;
   }
+  h3 {
+    font-size: 18px;
+    text-align: left;
+    margin-left: 10px;
+    font-weight: bold;
+  }
+
   display: inline;
 `;
 
@@ -151,6 +222,7 @@ const ClickMoiveImage = styled(motion.div)`
 
 const ClickMoiveTitle = styled(motion.h3)`
   color: ${(props) => props.theme.white.lighter};
+  font-weight: bold;
   font-size: 46px;
   position: relative;
   padding: 10px;
@@ -162,15 +234,13 @@ const ClickMoiveOverview = styled(motion.h3)`
   color: ${(props) => props.theme.white.lighter};
   padding: 20px;
   top: -80px;
-  font-size: 26px;
+  font-size: 20px;
   position: relative;
-  top: -80px;
 `;
 
 function Home() {
   const history = useHistory(); //여러 route 사이를 이동
   const movieMatch = useRouteMatch<{ movieId: string }>("/movies/:movieId"); ///movies/:movieId에 있으면 movieMatch는 존재, 아니면 null
-  const { scrollY } = useViewportScroll(); //object를 return
   // 영화  api 정보 가져옴
   const { data, isLoading } = useQuery<IGetMovies>(
     ["movies", "nowPlaying"],
@@ -188,7 +258,7 @@ function Home() {
   const onClcikSlid = () => {
     if (data) {
       if (slideNext) return;
-      toggleSlideNext(); //slideNext false로
+      toggleSlideNext(); //slideNext false로000
       const totalMovies = data.results.length - 1; //-1은 배너에서 사용됨
       const maxIndx = Math.floor(totalMovies / 6); // [총 영화 수/슬라이더 갯수] 내림차순 page는 0에서 시작하므로,
       setSlideNext(true);
@@ -200,6 +270,11 @@ function Home() {
     history.push(`/movies/${movieId}`);
   };
 
+  const onClcikLeft = () => {
+  setPage((prev) => prev -1);
+  };
+
+
   //오버레이 클릭시 발생
   const onOverlayClick = () => history.goBack();
   return (
@@ -209,15 +284,13 @@ function Home() {
       ) : (
         <>
           <Banner
-            onClick={onClcikSlid}
             bgposter={posterURL(data?.results[0].backdrop_path || "")}
           >
             <Title>{data?.results[0].title}</Title>
             <OverView>{data?.results[0].overview}</OverView>
           </Banner>
-
-         
-          <Slider > <SliderTitle>Weekly Best</SliderTitle>
+          <Slider id="weeklyBest">
+            <SliderTitle>Weekly Best</SliderTitle>
             {/* exit될 때 실행되는 onExitComplete, SliderNext==false  */}
             <AnimatePresence initial={false} onExitComplete={toggleSlideNext}>
               <SliderRow
@@ -227,7 +300,7 @@ function Home() {
                 animate="visible"
                 exit="exit"
                 transition={{ type: "tween", duration: 0.5 }}
-              >
+              > 
                 {data?.results
                   .slice(1) /* 배너 영화는 제외 */
                   .slice(6 * page, 6 * page + 6) //0~5, 6~12씩 잘라줌
@@ -239,24 +312,33 @@ function Home() {
                       variants={itemsVariants}
                       key={movie.id}
                       whileHover="hover"
-                      bgposter={posterURL(movie.backdrop_path || "w500")}
+                      bgposter={posterURL(movie.poster_path || "w500")}
                     >
                       <MovieInfo variants={infoVariants}>
-                        <h4>
+                        <h3>
                           {movie?.name && movie?.name}
                           {movie?.title && movie?.title}
-                        </h4>
-                        <h4>Genre {movie.media_type}</h4>
+                        </h3>
+                        <h4>{movie.media_type}</h4>
+                        <h4 style={{ color: "red" }}> {movie.vote_average}</h4>
                       </MovieInfo>
                     </Item>
                   ))}
+                  <SliderLeft onClick={onClcikLeft}></SliderLeft>
+                  <SliderRight onClick={onClcikSlid}>
+                    <RightSvg 
+                     xmlns="http://www.w3.org/2000/svg"
+                     width="1024"
+                     height="276.742"
+                     viewBox="0 0 1024 276.742"
+                   >
+                     <motion.path d="M140.803 258.904c-15.404 2.705-31.079 3.516-47.294 5.676l-49.458-144.856v151.073c-15.404 1.621-29.457 3.783-44.051 5.945v-276.742h41.08l56.212 157.021v-157.021h43.511v258.904zm85.131-157.558c16.757 0 42.431-.811 57.835-.811v43.24c-19.189 0-41.619 0-57.835.811v64.322c25.405-1.621 50.809-3.785 76.482-4.596v41.617l-119.724 9.461v-255.39h119.724v43.241h-76.482v58.105zm237.284-58.104h-44.862v198.908c-14.594 0-29.188 0-43.239.539v-199.447h-44.862v-43.242h132.965l-.002 43.242zm70.266 55.132h59.187v43.24h-59.187v98.104h-42.433v-239.718h120.808v43.241h-78.375v55.133zm148.641 103.507c24.594.539 49.456 2.434 73.51 3.783v42.701c-38.646-2.434-77.293-4.863-116.75-5.676v-242.689h43.24v201.881zm109.994 49.457c13.783.812 28.377 1.623 42.43 3.242v-254.58h-42.43v251.338zm231.881-251.338l-54.863 131.615 54.863 145.127c-16.217-2.162-32.432-5.135-48.648-7.838l-31.078-79.994-31.617 73.51c-15.678-2.705-30.812-3.516-46.484-5.678l55.672-126.75-50.269-129.992h46.482l28.377 72.699 30.27-72.699h47.295z" />
+                    </RightSvg>
+                  </SliderRight>
               </SliderRow>
             </AnimatePresence>
+            
           </Slider>
-
-          
-
-         
 
           <AnimatePresence>
             {movieMatch ? ( //movieMatch가 생기면
@@ -267,7 +349,7 @@ function Home() {
                   animate={{ opacity: 1 }}
                 >
                   <ClickMoive
-                    style={{ top: scrollY.get() }}
+                    style={{}}
                     layoutId={movieMatch.params.movieId} //링크에 있을 때만 발생
                   >
                     {clickedMovie && (
@@ -280,8 +362,10 @@ function Home() {
                         />
                         <ClickMoiveTitle>
                           {clickedMovie.original_title}
+                          {clickedMovie.name}
                         </ClickMoiveTitle>
                         <ClickMoiveOverview>
+                          {clickedMovie.overview}
                           {clickedMovie.overview}
                         </ClickMoiveOverview>
                       </>

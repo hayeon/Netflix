@@ -10,6 +10,7 @@ export interface IMovieResults {
   original_title:string
   name:string
   media_type: string
+  vote_average:number;
 };
 
 export interface IGetMovies {
@@ -21,10 +22,15 @@ export interface IGetMovies {
   results: IMovieResults[];
   total_pages: number;
   total_results: number;
-  poster_path:string;
 }
 
 export async function getMovies() {
   const response = await fetch(`${BASE_URL}/trending/all/week?api_key=${API_KEY}`);
+  return await response.json();
+}
+
+
+export async function getTv() {
+  const response = await fetch(`${BASE_URL}/movie/{movie_id}?api_key=${API_KEY}`);
   return await response.json();
 }
